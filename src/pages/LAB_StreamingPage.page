@@ -1,0 +1,59 @@
+<apex:page controller="LAB_StreamingPageController">
+    <apex:includeScript value="{!URLFOR($Resource.LAB_StreamingApiDemo, '/js/cometd.js')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.LAB_StreamingApiDemo, '/js/jquery-1.5.1.js')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.LAB_StreamingApiDemo, '/js/json2.js')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.LAB_StreamingApiDemo, '/js/jquery.cometd.js')}"/>
+    <script type="text/javascript">
+    (function($){
+        $(document).ready(function() {
+            // Connect to the CometD endpoint
+            $.cometd.init({
+               url: window.location.protocol+'//'+window.location.hostname+'/cometd/24.0/',
+               requestHeaders: { Authorization: 'OAuth {!$Api.Session_ID}'}
+           });
+
+           // Subscribe to a topic. JSON-encoded update will be returned
+           // in the callback
+           $.cometd.subscribe('/topic/LAB_AccountTopic', function(message) {
+               $('#content').append('<p>Notification: ' +
+                    'Channel: ' + JSON.stringify(message.channel) + '<br>' +
+                    'Record name: ' + JSON.stringify(message.data.sobject.Name) +
+                    '<br>' + 'ID: ' + JSON.stringify(message.data.sobject.Id) + 
+                    '<br>' + 'Event type: ' + JSON.stringify(message.data.event.type)+
+                    '<br>' + 'Created: ' + JSON.stringify(message.data.event.createdDate) + 
+                    '</p>');
+            });
+        });
+   
+})(jQuery)
+   
+</script>
+   
+<body>
+
+<apex:outputPanel rendered="{!(!topicSet)}">    
+    <h1>Important: Before you can begin, you must insert a push topic.</h1>
+    <apex:form >
+        <apex:commandButton value="Click to Insert Push Topic" action="{!addAccountTopic}" />
+    </apex:form>
+</apex:outputPanel>
+    
+   
+
+<apex:outputPanel rendered="{!topicSet}">   
+<div id="content">
+
+   <h1>LAB Streaming API Test Page</h1>
+
+   <p>This is a demonstration page for Streaming API. Notifications from the 
+       "LAB_AccountTopic" channel will appear here.</p>  
+       <p>To see it in action, 
+       login to this org on another browser and start changing the names of accounts.  You will see push notifications here.</p>
+    
+   
+    
+   
+</div>
+</apex:outputPanel>
+    </body>
+</apex:page>
